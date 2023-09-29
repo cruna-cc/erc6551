@@ -21,12 +21,12 @@ import "../../lib/ERC6551AccountLib.sol";
  * @notice A lightweight smart contract wallet implementation that can be used by ERC6551AccountProxy
  */
 contract ERC6551AccountUpgradeable is
-    IERC165,
-    IERC721Receiver,
-    IERC1155Receiver,
-    IERC6551Account,
-    IERC6551Executable,
-    IERC1271
+IERC165,
+IERC721Receiver,
+IERC1155Receiver,
+IERC6551Account,
+IERC6551Executable,
+IERC1271
 {
     /**
      * @dev Storage slot with the address of the current implementation.
@@ -34,7 +34,7 @@ contract ERC6551AccountUpgradeable is
      * validated in the constructor.
      */
     bytes32 internal constant _IMPLEMENTATION_SLOT =
-        0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
+    0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
     uint256 public state;
 
@@ -48,7 +48,7 @@ contract ERC6551AccountUpgradeable is
         uint256 _value,
         bytes calldata _data,
         uint256 _operation
-    ) external payable override returns (bytes memory _result) {
+    ) external payable virtual override returns (bytes memory _result) {
         require(_isValidSigner(msg.sender), "Caller is not owner");
         require(_operation == 0, "Only call operations are supported");
         ++state;
@@ -62,7 +62,7 @@ contract ERC6551AccountUpgradeable is
     /**
      * @dev Upgrades the implementation.  Only the token owner can call this.
      */
-    function upgrade(address implementation_) external {
+    function upgrade(address implementation_) external virtual {
         require(_isValidSigner(msg.sender), "Caller is not owner");
         require(implementation_ != address(0), "Invalid implementation address");
         ++state;
@@ -70,9 +70,9 @@ contract ERC6551AccountUpgradeable is
     }
 
     function isValidSignature(bytes32 hash, bytes memory signature)
-        external
-        view
-        returns (bytes4 magicValue)
+    external
+    view virtual
+    returns (bytes4 magicValue)
     {
         bool isValid = SignatureChecker.isValidSignatureNow(owner(), hash, signature);
         if (isValid) {
@@ -82,7 +82,7 @@ contract ERC6551AccountUpgradeable is
         return "";
     }
 
-    function isValidSigner(address signer, bytes calldata) external view returns (bytes4) {
+    function isValidSigner(address signer, bytes calldata) external view virtual returns (bytes4) {
         if (_isValidSigner(signer)) {
             return IERC6551Account.isValidSigner.selector;
         }
@@ -95,7 +95,7 @@ contract ERC6551AccountUpgradeable is
         address,
         uint256 receivedTokenId,
         bytes memory
-    ) external view returns (bytes4) {
+    ) external view virtual returns (bytes4) {
         _revertIfOwnershipCycle(msg.sender, receivedTokenId);
         return IERC721Receiver.onERC721Received.selector;
     }
@@ -106,7 +106,7 @@ contract ERC6551AccountUpgradeable is
         uint256,
         uint256,
         bytes memory
-    ) external pure returns (bytes4) {
+    ) external pure virtual returns (bytes4) {
         return IERC1155Receiver.onERC1155Received.selector;
     }
 
@@ -116,15 +116,15 @@ contract ERC6551AccountUpgradeable is
         uint256[] memory,
         uint256[] memory,
         bytes memory
-    ) external pure returns (bytes4) {
+    ) external pure virtual returns (bytes4) {
         return IERC1155Receiver.onERC1155BatchReceived.selector;
     }
 
     function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
         return (interfaceId == type(IERC6551Account).interfaceId ||
-            interfaceId == type(IERC6551Executable).interfaceId ||
-            interfaceId == type(IERC1155Receiver).interfaceId ||
-            interfaceId == type(IERC721Receiver).interfaceId ||
+        interfaceId == type(IERC6551Executable).interfaceId ||
+        interfaceId == type(IERC1155Receiver).interfaceId ||
+        interfaceId == type(IERC721Receiver).interfaceId ||
             interfaceId == type(IERC165).interfaceId);
     }
 
@@ -132,14 +132,14 @@ contract ERC6551AccountUpgradeable is
      * @dev {See IERC6551Account-token}
      */
     function token()
-        public
-        view
-        override
-        returns (
-            uint256,
-            address,
-            uint256
-        )
+    public
+    view virtual
+    override
+    returns (
+        uint256,
+        address,
+        uint256
+    )
     {
         return ERC6551AccountLib.token();
     }
@@ -147,13 +147,13 @@ contract ERC6551AccountUpgradeable is
     /**
      * @dev {See IERC6551Account-owner}
      */
-    function owner() public view returns (address) {
+    function owner() public view virtual returns (address) {
         (uint256 chainId, address contractAddress, uint256 tokenId) = token();
         if (chainId != block.chainid) return address(0);
         return IERC721(contractAddress).ownerOf(tokenId);
     }
 
-    function _isValidSigner(address signer) internal view returns (bool) {
+    function _isValidSigner(address signer) internal view virtual returns (bool) {
         return signer == owner();
     }
 
@@ -163,14 +163,14 @@ contract ERC6551AccountUpgradeable is
      * @param receivedTokenId The ID of the token being received.
      */
     function _revertIfOwnershipCycle(address receivedTokenAddress, uint256 receivedTokenId)
-        internal
-        view
+    internal
+    view virtual
     {
         (uint256 _chainId, address _contractAddress, uint256 _tokenId) = token();
         require(
             _chainId != block.chainid ||
-                receivedTokenAddress != _contractAddress ||
-                receivedTokenId != _tokenId,
+            receivedTokenAddress != _contractAddress ||
+            receivedTokenId != _tokenId,
             "Cannot own yourself"
         );
 
@@ -185,8 +185,8 @@ contract ERC6551AccountUpgradeable is
             ) {
                 require(
                     chainId != block.chainid ||
-                        contractAddress != receivedTokenAddress ||
-                        tokenId != receivedTokenId,
+                    contractAddress != receivedTokenAddress ||
+                    tokenId != receivedTokenId,
                     "Token in ownership chain"
                 );
                 // Advance up the ownership chain
