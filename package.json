@@ -1,6 +1,6 @@
 {
   "name": "erc6551",
-  "version": "0.2.2+fix1",
+  "version": "0.2.3",
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "forge test",
