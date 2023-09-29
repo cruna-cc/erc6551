@@ -1,0 +1,13 @@
+{
+  "name": "erc6551",
+  "version": "0.2.1",
+  "files": [
+    "**/*.sol",
+    "README.md"
+  ],
+  "description": "ERC-6551 reference implementation",
+  "scripts": {
+    "clean": "rimraf artifacts cache coverage coverage.json",
+    "prepublishOnly": "../script/verify-package-json-in-sync.js"
+  }
+}
