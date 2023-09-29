@@ -1,6 +1,6 @@
 {
   "name": "erc6551",
-  "version": "0.2.2",
+  "version": "0.2.2+fix1",
   "files": [
     "**/*.sol",
     "README.md"
